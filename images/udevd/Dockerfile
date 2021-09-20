@@ -1,6 +1,6 @@
 FROM ubuntu:21.04 AS base
 
-ENV DEBIAN_FRONTEND=noninteractive 
+ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ="Europe/London"
 
 RUN apt-get update -y && \
