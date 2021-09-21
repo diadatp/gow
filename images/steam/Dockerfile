@@ -36,7 +36,6 @@ COPY --chmod=777 common/* /bin/
 # /usr/lib/i386-linux-gnu/libnvidia-glvkspirv.so.460.80
 # But it's missing the following json file
 
-# RUN echo '{"file_format_version":"1.0.0","ICD":{"library_path":"libGLX_nvidia.so.0","api_version":"1.2.168"}}' > /etc/vulkan/icd.d/nvidia_icd.json
 COPY steam/configs/nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json
 
 # Set up the user
