@@ -39,19 +39,22 @@ RUN dpkg --add-architecture i386 && \
     apt-get install --no-install-recommends --yes \
         ca-certificates \
         wget && \
-    wget --quiet https://cdn.cloudflare.steamstatic.com/client/installer/steam.deb && \
+    wget --no-verbose --progress=bar:force:noscroll --show-progress \
+        https://cdn.cloudflare.steamstatic.com/client/installer/steam.deb && \
     apt-get autoremove --purge --yes \
         ca-certificates \
         wget && \
     apt-get install --no-install-recommends --yes \
-        ./steam.deb && \
+        ./steam.deb \
+        mesa-vulkan-drivers \
+        mesa-vulkan-drivers:i386 \
+        xdg-desktop-portal \
+        xdg-desktop-portal-gtk && \
     rm steam.deb && \
     apt-get update && \
     apt-get install --no-install-recommends --yes \
         steam-libs-amd64 \
-        steam-libs-i386:i386 \
-        xdg-desktop-portal \
-        xdg-desktop-portal-gtk && \
+        steam-libs-i386:i386 && \
     apt-get autoremove --yes && \
     rm -rf /var/lib/apt/lists/*
 
@@ -75,6 +78,14 @@ COPY steam/configs/nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json
 # Set up the user
 RUN setup-retro-user
 
+# steam installer bootstrap
+# RUN apt-get update && \
+#     apt-get install --no-install-recommends --yes \
+#         xvfb && \
+#     sudo -E -u ${UNAME} /bin/bash -c "awk '/steamwebhelper/{exit}1' < <(xvfb-run steam)" && \
+#     apt-get autoremove --purge --yes \
+#         xvfb && \
+#     rm -rf /var/lib/apt/lists/*
 
 WORKDIR $HOME
 USER ${UNAME}
