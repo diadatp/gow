@@ -79,13 +79,21 @@ COPY steam/configs/nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json
 RUN setup-retro-user
 
 # steam installer bootstrap
-# RUN apt-get update && \
-#     apt-get install --no-install-recommends --yes \
-#         xvfb && \
-#     sudo -E -u ${UNAME} /bin/bash -c "awk '/steamwebhelper/{exit}1' < <(xvfb-run steam)" && \
-#     apt-get autoremove --purge --yes \
-#         xvfb && \
-#     rm -rf /var/lib/apt/lists/*
+# ARG BOOTSTRAP_STEAM=true
+RUN if [ -n "${BOOTSTRAP_STEAM}" ] ; then \
+        apt-get update && \
+        apt-get install --no-install-recommends --yes \
+            xvfb && \
+        sudo -E -u ${UNAME} /bin/bash -c "awk '/steamwebhelper/{exit}1' < <(xvfb-run -e /dev/stdout steam)" && \
+        apt-get autoremove --purge --yes \
+            xvfb && \
+        rm -rf /var/lib/apt/lists/* \
+    ; fi
+
+# # proton bootstrap
+# RUN if [ -n "${BOOTSTRAP_PROTON}" ] ; then \
+#         TODO steamcmd
+#     ; fi
 
 WORKDIR $HOME
 USER ${UNAME}
