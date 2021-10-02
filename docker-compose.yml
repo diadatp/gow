@@ -83,7 +83,7 @@ services:
       - 47984-47990:47984-47990/tcp
       - 48010:48010
       - 47998-48000:47998-48000/udp
-    runtime: ${DOCKER_RUNTIME}
+    runtime: ${DOCKER_RUNTIME:-runc}
     privileged: true
     volumes:
       # Xorg socket in order to get the screen
@@ -115,7 +115,7 @@ services:
       - xorg
       - pulse
       - sunshine
-    runtime: ${DOCKER_RUNTIME}
+    runtime: ${DOCKER_RUNTIME:-runc}
     build:
       context: ./images/
       dockerfile: retroarch/Dockerfile
@@ -152,42 +152,42 @@ services:
       PULSE_SERVER: ${PULSE_SERVER}
 
   ####################
-  # steam:
-  #   depends_on:
-  #     - xorg
-  #     - pulse
-  #     - sunshine
-  #   runtime: ${DOCKER_RUNTIME}
-  #   build:
-  #     context: ./images/
-  #     dockerfile: steam/Dockerfile
-  #   image: gameonwhales/steam
-  #   network_mode: ${UDEVD_NETWORK}
-  #   privileged: true
-  #   volumes:
-  #     # Followings are needed in order to get joystick support
-  #     - /dev/input:/dev/input:ro
-  #     - udev:/run/udev:ro
-  #     # Xorg socket in order to get the screen
-  #     - ${XORG_SOCKET}:/tmp/.X11-unix
-  #     # Pulse socket, audio
-  #     - ${PULSE_SOCKET_HOST}:${PULSE_SOCKET_GUEST}
-  #     # Home directory: client, games, downloads, etc
-  #     - ${local_state}/:/home/retro/
-  #     # The following is needed by the webview otherwise you'll get Less than 64MB of free space in temporary directory (https://github.com/microsoft/vscode/issues/111729#issuecomment-737399692)
-  #     # TODO: why shm_size doesn't work ??????
-  #     - type: tmpfs
-  #       target: /dev/shm
-  #       tmpfs:
-  #           size: ${SHM_SIZE}
-  #   ipc: ${SHARED_IPC}  # Needed for MIT-SHM, removing this should cause a performance hit see https://github.com/jessfraz/dockerfiles/issues/359
-  #   environment:
-  #     DISPLAY: ${XORG_DISPLAY}
-  #     NVIDIA_DRIVER_CAPABILITIES: compat32,graphics,utility,display,video
-  #     NVIDIA_VISIBLE_DEVICES: ${GPU_UUID}
-  #     PROTON_LOG: 1
-  #     # LD_LIBRARY_PATH: /home/retro/.steam/ubuntu12_32/
-  #     PULSE_SERVER: ${PULSE_SERVER}
+  steam:
+    depends_on:
+      - xorg
+      - pulse
+      - sunshine
+    runtime: ${DOCKER_RUNTIME:-runc}
+    build:
+      context: ./images/
+      dockerfile: steam/Dockerfile
+    image: gameonwhales/steam
+    network_mode: ${UDEVD_NETWORK}
+    privileged: true
+    volumes:
+      # Followings are needed in order to get joystick support
+      - /dev/input:/dev/input:ro
+      - udev:/run/udev:ro
+      # Xorg socket in order to get the screen
+      - ${XORG_SOCKET}:/tmp/.X11-unix
+      # Pulse socket, audio
+      - ${PULSE_SOCKET_HOST}:${PULSE_SOCKET_GUEST}
+      # Home directory: client, games, downloads, etc
+      - ${local_state}/:/home/retro/
+      # The following is needed by the webview otherwise you'll get Less than 64MB of free space in temporary directory (https://github.com/microsoft/vscode/issues/111729#issuecomment-737399692)
+      # TODO: why shm_size doesn't work ??????
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+            size: ${SHM_SIZE}
+    ipc: ${SHARED_IPC}  # Needed for MIT-SHM, removing this should cause a performance hit see https://github.com/jessfraz/dockerfiles/issues/359
+    environment:
+      DISPLAY: ${XORG_DISPLAY}
+      NVIDIA_DRIVER_CAPABILITIES: compat32,graphics,utility,display,video
+      NVIDIA_VISIBLE_DEVICES: ${GPU_UUID}
+      PROTON_LOG: 1
+      # LD_LIBRARY_PATH: /home/retro/.steam/ubuntu12_32/
+      PULSE_SERVER: ${PULSE_SERVER}
 
   # ####################
   # An example of running an unprivileged X11 app in this environment
