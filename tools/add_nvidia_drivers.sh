@@ -35,7 +35,8 @@ RUN dpkg --add-architecture i386 && \
         kmod \
         pkg-config \
         wget && \
-    wget --quiet http://us.download.nvidia.com/XFree86/Linux-x86_64/${NVIDIA_DRIVER_VERSION}/NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}.run && \
+    wget --no-verbose --progress=bar:force:noscroll --show-progress \
+        http://us.download.nvidia.com/XFree86/Linux-x86_64/${NVIDIA_DRIVER_VERSION}/NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}.run && \
     sh NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}.run \
         --install-compat32-libs \
         --install-libglvnd \
