@@ -34,6 +34,8 @@ services:
       CURRENT_OUTPUT: ${XORG_DISPLAY_PORT}
       REFRESH_RATE: ${XORG_REFRESH_RATE}
       FORCE_RESOLUTION: ${XORG_FORCE_RESOLUTION}
+    profiles:
+      - headless
 
   ####################
   # If you don't have a pulse server start it
@@ -69,7 +71,6 @@ services:
   ####################
   sunshine:
     depends_on: 
-      - xorg
       - pulse
     build: 
       context: ./images/
@@ -112,7 +113,6 @@ services:
   ####################
   retroarch:
     depends_on:
-      - xorg
       - pulse
       - sunshine
     runtime: ${DOCKER_RUNTIME}
@@ -154,7 +154,6 @@ services:
   ####################
   # steam:
   #   depends_on:
-  #     - xorg
   #     - pulse
   #     - sunshine
   #   runtime: ${DOCKER_RUNTIME}
@@ -193,7 +192,6 @@ services:
   # An example of running an unprivileged X11 app in this environment
   # firefox:
   #   depends_on: 
-  #     - xorg
   #     - pulse
   #     - sunshine
   #   image: andrewmackrodt/firefox-x11
