@@ -6,9 +6,11 @@ set -euxo pipefail
 # gameonwhales/xorg
 # gameonwhales/steam
 
-DOCKER_BUILDKIT=1 docker build - --tag $1 --build-arg FROM=$1 << 'EOF'
+DOCKER_BUILDKIT=1 docker build - --tag ${1}-nvidia --build-arg FROM=$1 << 'EOF'
 ARG FROM
 FROM ${FROM}
+
+USER root
 
 ARG NVIDIA_DRIVER_VERSION=465.19.01
 
@@ -47,4 +49,6 @@ RUN dpkg --add-architecture i386 && \
         --ui=none && \
     rm NVIDIA-Linux-x86_64-${NVIDIA_DRIVER_VERSION}.run && \
     rm -rf /var/lib/apt/lists/*
+
+USER ${UNAME}
 EOF
