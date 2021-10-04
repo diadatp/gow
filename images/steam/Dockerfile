@@ -5,6 +5,31 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_DRIVER_CAPABILITIES=all
 ENV NVIDIA_VISIBLE_DEVICES=all
 
+RUN dpkg --add-architecture i386 \
+ && apt-get update \
+ && apt-get upgrade --yes \
+ && apt-get install --no-install-recommends --yes \
+        libegl1 \
+        libegl1:i386 \
+        libgl1 \
+        libgl1:i386 \
+        libgles1 \
+        libgles1:i386 \
+        libgles2 \
+        libgles2:i386 \
+        libglvnd0 \
+        libglvnd0:i386 \
+        libglx0 \
+        libglx0:i386 \
+        libopengl0 \
+        libopengl0:i386 \
+        libpulse0 \
+        libpulse0:i386 \
+        mesa-vulkan-drivers \
+        mesa-vulkan-drivers:i386 \
+        x11-utils \
+ && rm -rf /var/lib/apt/lists/*
+
 ENV TZ="Europe/London"
 
 ENV UNAME retro
@@ -58,13 +83,14 @@ RUN dpkg --add-architecture i386 && \
     apt-get autoremove --yes && \
     rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && \
-    apt-get install --no-install-recommends --yes \
+RUN apt-get update \
+ && apt-get install --no-install-recommends --yes \
         locales \
+        mesa-utils \
+        pulseaudio-utils \
         sudo \
-        x11-utils && \
-    apt-get autoremove --yes && \
-    rm -rf /var/lib/apt/lists/*
+        vulkan-utils \
+ && rm -rf /var/lib/apt/lists/*
 
 # Common scripts
 COPY --chmod=777 common/* /bin/
@@ -77,6 +103,9 @@ COPY steam/configs/nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json
 
 # Set up the user
 RUN setup-retro-user
+
+# TODO remove this
+RUN echo "$UNAME ALL = NOPASSWD: ALL" >> /etc/sudoers.d/$UNAME
 
 # steam installer bootstrap
 # ARG BOOTSTRAP_STEAM=true
