@@ -119,13 +119,18 @@ RUN if [ -n "${BOOTSTRAP_STEAM}" ] ; then \
         rm -rf /var/lib/apt/lists/* \
     ; fi
 
-# # proton bootstrap
-# RUN if [ -n "${BOOTSTRAP_PROTON}" ] ; then \
-#         TODO steamcmd
-#     ; fi
-
 WORKDIR $HOME
 USER ${UNAME}
+
+# proton bootstrap
+# install Proton 6.3 (1580130) and Steam Linux Runtime - Soldier (1391110)
+# ARG BOOTSTRAP_PROTON=true
+RUN if [ -n "${BOOTSTRAP_PROTON}" ] ; then \
+        curl -sqL "https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz" | tar zxvf - \
+     && ./steamcmd.sh +login anonymous +app_update 1391110 validate +quit \
+     && ./steamcmd.sh +login anonymous +app_update 1580130 validate +quit \
+     && rm -rf steamcmd.sh linux32/ \
+    ; fi
 
 COPY steam/scripts/startup.sh /startup.sh
 
