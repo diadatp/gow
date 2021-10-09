@@ -113,7 +113,7 @@ RUN if [ -n "${BOOTSTRAP_STEAM}" ] ; then \
         apt-get update && \
         apt-get install --no-install-recommends --yes \
             xvfb && \
-        sudo -E -u ${UNAME} /bin/bash -c "awk '/steamwebhelper/{exit}1' < <(xvfb-run -e /dev/stdout steam)" && \
+        sudo -E -u ${UNAME} /bin/bash -c "awk '/Restarting Steam by request/{exit}1' < <(xvfb-run -e /dev/stdout steam)" && \
         apt-get autoremove --purge --yes \
             xvfb && \
         rm -rf /var/lib/apt/lists/* \
