@@ -1,15 +1,9 @@
-FROM ubuntu:21.04 AS base
+FROM ubuntu:20.04 AS base
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ="Europe/London"
 
 ENV UNAME retro
-
-# Pulling Sunshine v0.10.1
-ARG SUNSHINE_SHA=7a920da06d1417828674842f44b919b75d70d3fe
-ENV SUNSHINE_SHA=${SUNSHINE_SHA}
-ARG BUILD_TYPE=RELEASE 
-ENV BUILD_TYPE=${BUILD_TYPE}
 
 ######################################
 FROM base AS sunshine-builder
@@ -17,8 +11,35 @@ FROM base AS sunshine-builder
 RUN apt-get update -y && apt-get install -y --no-install-recommends \
     # Packages needed to build sunshine
     build-essential fakeroot gcc-10 g++-10 cmake libssl-dev libavdevice-dev libboost-thread-dev libboost-filesystem-dev libboost-log-dev libpulse-dev libopus-dev libxtst-dev libx11-dev libxrandr-dev libxfixes-dev libevdev-dev libxcb1-dev libxcb-shm0-dev libxcb-xfixes0-dev \
-    git ca-certificates apt-transport-https \
+    git ca-certificates apt-transport-https gnupg \
     && rm -rf /var/lib/apt/lists/*
+
+# CUDA install steps adapted from:
+# https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu&target_version=20.04&target_type=deb_network
+
+ADD https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+
+# RUN wget --no-verbose --progress=bar:force:noscroll --show-progress \
+#     https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin \
+#     -O /etc/apt/preferences.d/cuda-repository-pin-600
+
+RUN apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+
+RUN echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/ /" | tee -a /etc/apt/sources.list
+
+ARG CUDA_VER=11-4
+
+RUN apt-get update \
+ && apt-get install --no-install-recommends --yes \
+    cuda-minimal-build-${CUDA_VER} \
+ && rm -rf /var/lib/apt/lists/*
+
+ENV PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
+# ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
+# Pulling Sunshine v0.11.1
+ARG SUNSHINE_SHA=e4c9c292e57d39136df2d46d1e9b66eba53f3bd3
+ARG BUILD_TYPE=RELEASE
 
 RUN git clone https://github.com/loki-47-6F-64/sunshine.git && \
     cd sunshine && \
