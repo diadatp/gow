@@ -54,7 +54,7 @@ runcmd:
   # Install NVIDIA driver (GeForce version for now)
   # - wget https://storage.googleapis.com/nvidia-drivers-us-public/GRID/GRID13.1/NVIDIA-Linux-x86_64-470.82.01-grid.run -O nvidia.run
   - wget --no-verbose --progress=bar:force:noscroll --show-progress https://us.download.nvidia.com/XFree86/Linux-x86_64/495.44/NVIDIA-Linux-x86_64-495.44.run -O nvidia.run
-  - sh nvidia.run --expert --no-questions --ui=none
+  - sh nvidia.run --disable-nouveau --expert --no-install-libglvnd --no-questions --ui=none
   # Install docker-compose
   - curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
   - chmod +x /usr/local/bin/docker-compose
