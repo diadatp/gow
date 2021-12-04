@@ -1,0 +1,91 @@
+#cloud-config
+
+users:
+  - default
+  - name: gowuser
+    gecos: gowuser
+    groups:
+      - adm
+      - audio
+      - cdrom
+      - dialout
+      - dip
+      - docker
+      - floppy
+      - input
+      - lxd
+      - netdev
+      - plugdev
+      - sudo
+      - video
+    shell: /bin/bash
+    sudo: 'ALL=(ALL) NOPASSWD:ALL'
+    ssh-authorized-keys:
+      - ssh-ed25519 xxxxxxxx xxxxxxxx@xxxxxxxx
+
+apt:
+  sources:
+    docker.list:
+      source: |
+        deb [arch=amd64] https://download.docker.com/linux/ubuntu $RELEASE stable
+      keyid: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+    nvidia-docker:
+      source: |
+        deb https://nvidia.github.io/libnvidia-container/stable/ubuntu18.04/$(ARCH) /
+        deb https://nvidia.github.io/nvidia-container-runtime/stable/ubuntu18.04/$(ARCH) /
+        deb https://nvidia.github.io/nvidia-docker/ubuntu18.04/$(ARCH) /
+      keyid: C95B321B61E88C1809C4F759DDCAE044F796ECB0
+
+packages:
+  - build-essential
+  - docker-ce
+  - nvidia-docker2
+  - pkg-config
+
+runcmd:
+  # nvidia-docker2 might need a restart of the docker daemon
+  - systemctl restart docker
+  # Alicloud's Ubuntu 20.04 image has an incompatible version installed
+  - apt-get install --no-install-recommends --yes --allow-downgrades libx11-6=2:1.6.9-2ubuntu1.2
+  # Enable 32-bit packages and install libglvnd along with many related libs
+  - dpkg --add-architecture i386
+  - apt-get update
+  - apt-get install --no-install-recommends --yes libglvnd-dev libglvnd-dev:i386
+  # Install NVIDIA driver (GeForce version for now)
+  # - wget https://storage.googleapis.com/nvidia-drivers-us-public/GRID/GRID13.1/NVIDIA-Linux-x86_64-470.82.01-grid.run -O nvidia.run
+  - wget --no-verbose --progress=bar:force:noscroll --show-progress https://us.download.nvidia.com/XFree86/Linux-x86_64/495.44/NVIDIA-Linux-x86_64-495.44.run -O nvidia.run
+  - sh nvidia.run --expert --no-questions --ui=none
+  # Install docker-compose
+  - curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+  - chmod +x /usr/local/bin/docker-compose
+  - docker-compose --version
+  # Pull the gow repo (checkout step is missing)
+  - git clone https://github.com/games-on-whales/gow.git /tmp/gow
+  # Fix permissions
+  - mkdir /tmp/gow/images
+  - mkdir /tmp/gow/local_state
+  - chown -R gowuser:gowuser /tmp/gow
+  # Start docker-compose
+  - cd /tmp/gow && docker-compose pull
+  - cd /tmp/gow && docker-compose up -d
+
+write_files:
+  - path: /etc/X11/xorg.conf
+    content: |
+      Section "Device"
+          Identifier     "Device0"
+          Driver         "nvidia"
+          VendorName     "NVIDIA Corporation"
+          BoardName      "Tesla T4"
+          BusID          "PCI:0:7:0"
+      EndSection
+
+      Section "Screen"
+          Identifier     "Screen0"
+          Device         "Device0"
+          DefaultDepth    24
+          Option         "metamodes" "1600x900 +0+0"
+          SubSection     "Display"
+              Depth       24
+          EndSubSection
+      EndSection
